@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-module
+  type="WEB"
+  name="oulc"
+  id="myeclipse.1488162754468"
+  context-root="/oulc"
+  j2ee-spec="6.0"
+  archive="oulc.war">
+  <attributes>
+    <attribute name="webrootdir" value="WebRoot" />
+  </attributes>
+</project-module>
+
