@@ -17,8 +17,8 @@ public class MessageNoticeQueueDAOImpl implements IMessageNoticeQueueDAO {
     @Autowired
     MessageNoticeQueueEngine messageNoticeQueueEngine;
     @Override
-    public List<IMessageNoticeQueueValue> queryInfoByCondition(String conditon, HashMap params, int begin, int end) throws Exception {
-        return messageNoticeQueueEngine.queryByCondition(conditon,params,begin,end);
+    public List<IMessageNoticeQueueValue> queryInfoByCondition(String condition, HashMap params, int begin, int end) throws Exception {
+        return messageNoticeQueueEngine.queryByCondition(condition,params,begin,end);
     }
 
     @Override

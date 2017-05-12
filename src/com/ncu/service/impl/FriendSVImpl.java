@@ -77,10 +77,10 @@ public class FriendSVImpl implements IFriendSV{
      * @throws Exception
      */
     @Override
-    public List getFrienInfoReturn(String userId) throws Exception {
+    public List getFrienInfoReturn(long userId) throws Exception {
         List rtnList = new ArrayList();//这个是要返回的朋友的信息
-        if(StringUtils.isNotBlank(userId)){
-            List<IUserValue> friendsList = queryFriendInfoByUserId(Long.parseLong(userId));//查询用户的朋友的所有信息
+        if(userId !=0){
+            List<IUserValue> friendsList = queryFriendInfoByUserId(userId);//查询用户的朋友的所有信息
             if(friendsList != null){
                 int length = friendsList.size();
                 for(int i = 0;i<length;i++){

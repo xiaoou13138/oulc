@@ -11,11 +11,11 @@
            maxElementsInMemory="2000"
            eternal="false"
            overflowToDisk="true"
-           diskPersistent="true"/>
+           diskPersistent="false"/>
     <cache name="wordCache"
            maxElementsOnDisk="20000"
            maxElementsInMemory="2000"
            eternal="false"
            overflowToDisk="true"
-           diskPersistent="true"/>
+           diskPersistent="false"/>
 </ehcache>

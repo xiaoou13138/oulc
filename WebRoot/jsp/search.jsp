@@ -1,60 +1,70 @@
-<%@ page language="java" import="java.util.*" pageEncoding="utf-8"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<!doctype html>
 <head>
 	<title>搜索一下</title>
 	<script src="js/head.js"></script>
 </head>
 <body>
     <div class="bg">
-    	<div class="grid-total" align="center" id="searchDIV">
-    		<div class="grid-search-left"></div>
-    		<div class="grid-search-center">
-    			<div class="grid-left"><input type="text"  class="myform-control" id="searchContent"></div>
-    			<div class="grid-right"><a class="search-button btn-primary no-line " onclick="doSearch(0,10,true)">搜索</a></div>
-    		</div>
-    		<div class="grid-search-right"></div>
-    		<div style="clear:both"></div>
-    		
-    		<div class="grid-options"></div>
-    		<div class="grid-sort"></div>
-	    	<div id="searchInfo" class="products">
+		<div class="container" style="height: 1000px;">
+			<div class="row search-content-block">
+				<div class="grid-search-center center-block" style="margin-top: 50px">
+					<div class="col-md-offset-2 col-md-7 "><input type="text"  class="form-control" id="searchContent" style="border-radius:0px;"></div>
+					<div class="col-md-1 "><a class="btn btn-primary" onclick="webSearch(0,10,true)">搜索</a></div>
+				</div>
+			</div>
+			<div class="row box-border" >
+				<div class="container-fluid" id = "products">
 
-	    	</div>
-    	</div>
-		<div style="padding-left:100px;">
-			<ul class="pagination"></ul>
+				</div>
+			</div>
+			<div>
+				<ul class="pagination"></ul>
+			</div>
 		</div>
     </div>
-    <script>  
+
+	<div class="row search-result-block text-left " id="example" style="display: none">
+		<div class="container-fluid"	>
+			<div class="row search-result-title">
+				<a href="" target="_blank" id="title"></a>
+			</div>
+			<div class="row search-result-content" id="content">
+			</div>
+			<div class="row search-result-comment">
+				<a href="javascript:void(0)" onclick="openCommentWindow(this)" id="comment" >评级/评价</a>
+			</div>
+		</div>
+	</div>
+    </div>
+    <script>
+	document.onkeydown=function(e){
+		if (!e) e = window.event;
+		if ((e.keyCode || e.which) == 13){
+			doSearch();
+		}
+	};
+    var searchContent;
      $(document).ready(function(){
-         $(window).scroll(function () {
-             if ($(".navbar").offset().top > 50) {$(".navbar-fixed-top").addClass("top-nav");
-             }else {$(".navbar-fixed-top").removeClass("top-nav");}
-         });
-         document.onkeydown=function(e){
-             if (!e) e = window.event;
-             if ((e.keyCode || e.which) == 13){
-                 doSearch();
-             }
-         };
+
+         webSearch(0,10,true);
      });
 
-    function doSearch(begin,end,isFirst){
+    function webSearch(begin,end,isFirst){
         //获取值
-        var searchData = $("#searchContent").val();
 
+        searchContent = $("#searchContent").val();
         var data = {
-            "begin":1,
-            "end":2,
-            "searchParams":[searchData]
+            "begin":0,
+            "end":10,
+            "searchContent":searchContent
         };
         doAjax("POST","search_doSearch",data,function(data){
-            if("success"==data.result){
-                $.each(data.html, function(index, value, array) {
-                    $("#searchInfo").html(value);
+            if("Y"==data.result){
+                $("#products").empty();
+                $.each(data.webList, function(index, value, array) {
+                    createSearchHtml(value);
 				});
-
                 $("#searchDIV").attr("align","left");
                 if(isFirst){
                     setPage(data.count,function (begin,end) {
@@ -62,16 +72,28 @@
                     });
 				}
             }
-            $("#code").qtip(getRentingTips('查询失败'));
-            $("#code").focus();
         });
         //查询后台获取数据
     }
+    function createSearchHtml(value) {
+        $("#example").clone(true).attr("id","block"+value.id).appendTo("#products").css("display","block");
+        var block = $("#block"+value.id).find('#title');
+        block.attr("href",value.url);
+        block.text(value.title);
+        var commnet = $("#block"+value.id).find('#comment');
+        commnet.attr("data-id",value.id);
+        //查询网站的信息
+		doPostAjax("search_dealAction",{url:value.url,searchContent:searchContent},function (data) {
+			if(data.result == "Y"){
+                $("#block"+value.id).find('#content').html(data.html);
+			}
+        })
+        debugger;
+    }
      function openCommentWindow(obj){
-         var id = $(obj).attr("value");
-         window.open("./comment?webId="+id, "newwindow","toolbar=no,location=no,directories=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=750,height=470,left=80,top=40")
+         var id = parseInt($(obj).attr("data-id"));
+         openIFrame("评论/评级","./comment?webId="+id);
      }
     </script>
-        
 </body>
 </html>

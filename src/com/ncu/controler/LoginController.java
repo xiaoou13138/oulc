@@ -60,6 +60,7 @@ public class LoginController extends BaseController{
 		HashMap map = sv.checkUserInfo(code,password);
 		this.getRequest().getSession().setAttribute("userId",map.get("userId"));
 		this.getRequest().getSession().setAttribute("userName",map.get("userName"));
+		this.getRequest().getSession().setAttribute("userType",map.get("userType"));
 		if((boolean)map.get("result")){
 			rtn = "Y";
 		}

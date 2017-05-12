@@ -33,7 +33,7 @@ public class UtilController extends BaseController{
 		ViewData data = this.getViewData();
 		String imageFile = data.getString("imageFile");
 		//暂时先用虚拟的路径
-		String imagePath = cache.getStaticDataByCode("physicalPath").get(0).getCodeValue()+imageFile;
+		String imagePath = cache.getCodeValueByCode("physicalPath")+imageFile;
 		
 		FileInputStream fileIs = null;
 		OutputStream outStream = null;

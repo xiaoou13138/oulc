@@ -1,22 +1,38 @@
 <%@ page language="java" import="java.util.*" pageEncoding="utf-8"%>
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
+<!doctype html>
 <head>
     <title>搜索一下</title>
     <script src="js/head.js"></script>
+    <link href="css/main.css" rel="stylesheet">
 </head>
 <body>
 <nav class="navbar navbar-fixed-top my-navbar" role="navigation">
     <div class="container-fluid">
         <div >
-            <a class="navbar-brand" href="#"  id="userHref" style="float: right;margin-right: 150px">
+            <a class="navbar-brand" onclick="manageChange('./search')"  style="float: left;margin-right: 40px">
+                主页
+            </a>
+        </div>
+        <div >
+            <a class="navbar-brand" onclick="manageChange('./openAccount')"  style="float: left;margin-right: 40px">
+                公开账号
+            </a>
+        </div>
+        <div >
+            <a class="navbar-brand" onclick="manageChange('./crawler')"  style="float: left;margin-right: 40px">
+                爬虫
+            </a>
+        </div>
+        <div >
+            <a class="navbar-brand" href="javascript:void(0)"  id="userHref" style="float: right;margin-right: 150px" onclick="manageChange('./manage')">
                 <div class="fa" id="hrefContent"></div>
             </a>
         </div>
-        
     </div>
 </nav>
-<jsp:include  page="search.jsp"/>
+<div style="height: 100%;">
+    <iframe src="./search" width="100%" height="100%" allowTransparency="true" id="bottonFrame" ></iframe>
+</div>
 <script>
     var userName =  "";
     var messageNum = 0;
@@ -37,7 +53,7 @@
     //根据是否有用户改变样式
     function changeUserIcon(hasUserInfo,userName){
         if(hasUserInfo == true){
-            $("#userHref").attr("href","http://localhost:8080/oulc/userInfo")
+            $("#userHref").attr("href","javascript:void(0)")
             $("#hrefContent").addClass("userCond");
             $("#hrefContent").text("");
         }else{
@@ -89,6 +105,9 @@
             expires : -1
         });
         changeUserIcon(false)
+    }
+    function manageChange(address){
+        $("#bottonFrame",parent.document.body).attr("src",address);
     }
 </script>
 </body>

@@ -12,6 +12,9 @@ import com.ncu.table.ivalue.IUserValue;
 @Table(name ="user")
 public class UserBean implements IUserValue,Serializable{
 
+  @Column(name = IUserValue.S_Scord)
+  private Float scord;
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = IUserValue.S_UserId)
@@ -44,6 +47,9 @@ public class UserBean implements IUserValue,Serializable{
   @Column(name = IUserValue.S_Sex)
   private String sex;
 
+  @Column(name = IUserValue.S_Description)
+  private String description;
+
   @Column(name = IUserValue.S_RealName)
   private String realName;
 
@@ -52,6 +58,14 @@ public class UserBean implements IUserValue,Serializable{
 
   @Transient
   public static ArrayList<String> primaryKey = BeanUtil.initPK(beanClass);
+
+  public void setScord(Float value){
+    this.scord = value;
+  }
+
+  public Float getScord(){
+    return scord;
+  }
 
   public void setUserId(Long value){
     this.userId = value;
@@ -131,6 +145,14 @@ public class UserBean implements IUserValue,Serializable{
 
   public String getSex(){
     return sex;
+  }
+
+  public void setDescription(String value){
+    this.description = value;
+  }
+
+  public String getDescription(){
+    return description;
   }
 
   public void setRealName(String value){

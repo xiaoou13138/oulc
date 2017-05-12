@@ -11,8 +11,32 @@ function checkMail(email_address) {
 		return false;
 	}
 }
+function checkMailAndPrompt(obj){
+	if($("#"+obj).val()){
+        if(!checkMail($("#"+obj).val())){
+            $("#"+obj).focus();
+            layer.tips('邮箱格式不正确', "#"+obj);
+        }
+	}
+}
+function checkPhoneAndPrompt(obj) {
+    if($("#"+obj).val()){
+    	var objVal = $("#"+obj).val();
+    	if(isNaN(objVal)){
+            $("#"+obj).focus();
+            layer.tips('输入类型必须为数字', "#"+obj);
+            $("#"+obj).val("")
+            return;
+            if(!checkMail(objVal)){
+                $("#"+obj).focus();
+                layer.tips('手机格式不正确', "#"+obj);
+            }
+		}
+
+    }
+}
 /**
- * 校验是否是手机号码
+ * 校验是否是手机号码 如果通过就返回true
  * @param phone_number
  * @returns {Boolean}
  */
@@ -38,4 +62,41 @@ function checkTime(time1,time2){
 		return false;
 	}
 	return true;
+}
+/**
+ * 校验数字
+ * @param time1
+ * @param time2
+ * @returns {Boolean}
+ */
+function validateNumAndPrompt(obj1) {
+    var obj = $(obj1).val();
+    if(obj!="" && obj!=undefined){
+        if(isNaN(obj)){
+            layer.alert('请输入数字', {
+                skin: 'layui-layer-molv' //样式类名
+                ,closeBtn: 0
+            });
+            $(obj1).val("")
+            return;
+        }
+    }
+}
+function validForm(){
+    var success = true;
+    $.each($(".has-check"),function (index,value,array) {
+        var labelText = $(value).find('.control-label').text();
+        var index = labelText.indexOf(':');
+        labelText = labelText.substr(0,index);
+
+        var checkComponent = $(value).find('.form-control');
+        var checkComponentVal = checkComponent.val();
+        if(checkComponentVal ==  undefined || checkComponentVal ==""){
+            layer.msg(labelText+'必须要填写');
+            checkComponent.focus();
+            success = false;
+            return false;
+        }
+    });
+    return success;
 }

@@ -12,9 +12,7 @@ import org.springframework.orm.hibernate5.HibernateCallback;
 import org.springframework.orm.hibernate5.HibernateTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by xiaoou on 2017/3/23.
@@ -31,23 +29,70 @@ public class CommonDAOImpl implements ICommonDAO {
             @Override
             public Object doInHibernate(Session session) throws HibernateException {
                 Query query = session.createQuery(sql);
-               for(int i = 0;i<paramsDefine.length;i++){
-                   if(paramsDefine[i].getIsList()){
-                       query.setParameterList(paramsDefine[i].getColName(),paramsDefine[i].getParamListVal());
-                   }else{
-                       query.setParameter(paramsDefine[i].getColName(),paramsDefine[i].getParamVal());
-                   }
-               }
-               List list =query.list();
-                if(list != null && list.size()>0){
-                    if(list.get(0) instanceof MessageBean){
-                        System.out.print("1");
+                if(paramsDefine != null && paramsDefine.length >0){
+                    for(int i = 0;i<paramsDefine.length;i++){
+                        if(paramsDefine[i].getIsList()){
+                            query.setParameterList(paramsDefine[i].getColName(),paramsDefine[i].getParamListVal());
+                        }else{
+                            query.setParameter(paramsDefine[i].getColName(),paramsDefine[i].getParamVal());
+                        }
                     }
                 }
-                return query.list();
+               return query.list();
             }
         });
     }
 
-
+    public List commonQuery(final String sql, ParamsDefine[] paramsDefine,int begin,int end) throws Exception {
+        return(List) template.execute(new HibernateCallback() {
+            @Override
+            public Object doInHibernate(Session session) throws HibernateException {
+                Query query = session.createQuery(sql);
+                if(paramsDefine != null && paramsDefine.length >0){
+                    for(int i = 0;i<paramsDefine.length;i++){
+                        if(paramsDefine[i].getIsList()){
+                            query.setParameterList(paramsDefine[i].getColName(),paramsDefine[i].getParamListVal());
+                        }else{
+                            query.setParameter(paramsDefine[i].getColName(),paramsDefine[i].getParamVal());
+                        }
+                    }
+                }
+                //判断分页 开始
+                if(begin==-1^end==-1){
+                    throw new HibernateException("分页错误");
+                }
+                if(begin != -1){
+                    query.setFirstResult(begin);
+                    query.setMaxResults(end);
+                }
+                List list= query.list();
+                return query.list();
+            }
+        });
+    }
+    public long getCount(final String sqlI, ParamsDefine[] paramsDefine) throws Exception {
+        final String sql = "select count(0) "+sqlI;
+        return(long) template.execute(new HibernateCallback() {
+            @Override
+            public Object doInHibernate(Session session) throws HibernateException {
+                Query query = session.createQuery(sql);
+                if(paramsDefine != null && paramsDefine.length >0){
+                    for(int i = 0;i<paramsDefine.length;i++){
+                        if(paramsDefine[i].getIsList()){
+                            query.setParameterList(paramsDefine[i].getColName(),paramsDefine[i].getParamListVal());
+                        }else{
+                            query.setParameter(paramsDefine[i].getColName(),paramsDefine[i].getParamVal());
+                        }
+                    }
+                }
+                List list =  query.list();
+                if(list != null && list.size()>0){
+                    Object count = list.get(0);
+                    long countObject= (long)list.get(0);
+                    return countObject;
+                }
+                return 0L;
+            }
+        });
+    }
 }

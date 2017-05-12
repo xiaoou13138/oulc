@@ -53,7 +53,11 @@ public class ViewData extends HashMap{
 	public Object get(Object key){
 		return map.get(key);
 	}
-	
+
+	public int getInt(Object key){
+		return Integer.parseInt(map.get(key).toString());
+	}
+
 	public void clear(){
 		map.clear();
 	}

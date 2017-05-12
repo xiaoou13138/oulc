@@ -3,6 +3,7 @@ package com.ncu.table.ivalue;
 import java.util.Date;
 
 public interface IUserValue{
+  public final static String S_Scord = "SCORD";
   public final static String S_UserId = "USER_ID";
   public final static String S_Code = "CODE";
   public final static String S_Password = "PASSWORD";
@@ -13,7 +14,9 @@ public interface IUserValue{
   public final static String S_Name = "NAME";
   public final static String S_Phone = "PHONE";
   public final static String S_Sex = "SEX";
+  public final static String S_Description = "DESCRIPTION";
   public final static String S_RealName = "REAL_NAME";
+  public void setScord(Float value);
   public void setUserId(Long value);
   public void setCode(String value);
   public void setPassword(String value);
@@ -24,7 +27,9 @@ public interface IUserValue{
   public void setName(String value);
   public void setPhone(String value);
   public void setSex(String value);
+  public void setDescription(String value);
   public void setRealName(String value);
+  public Float getScord();
   public Long getUserId();
   public String getCode();
   public String getPassword();
@@ -35,5 +40,6 @@ public interface IUserValue{
   public String getName();
   public String getPhone();
   public String getSex();
+  public String getDescription();
   public String getRealName();
 }

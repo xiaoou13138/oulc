@@ -1,6 +1,8 @@
 package com.ncu.crawler;
 
 import java.io.*;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class DownTool {
 	@Autowired
 	private DealData data ;
+
 
 	/**
 	 * 根据 URL 和网页类型生成需要保存的网页的文件名，去除 URL 中的非文件名字符
@@ -82,7 +85,7 @@ public class DownTool {
 					+ getFileNameByUrl(url,
 							getMethod.getResponseHeader("Content-Type")
 									.getValue());*/
-			String contentType = getMethod.getResponseHeader("Content-Type").getValue();
+			String contentType = getContentType(getMethod,url);
 			//saveToLocal(responseBody, filePath);
 			String content = new String(responseBody,getCharSet(contentType));
 			data.dealData(content,url,getTitle(content));
@@ -110,13 +113,76 @@ public class DownTool {
     }
     private static String getTitle(String content){
 		String title = "";
-		String reges = "<title>.*?</title>";
+		String reges = "<title>[\\s\\S]*?</title>";
 		Pattern pattern = Pattern.compile(reges);
 		Matcher matcher = pattern.matcher(content);
 		if(matcher.find()){
 			title = matcher.group().replace("<title>","").replace("</title>","");
 		}
 		return title;
+	}
+
+	public String getContentType(GetMethod getMethod,String url){
+		Set<String> tags = HtmlParserTool.getMeta(url);
+		String headContent = getMethod.getResponseHeader("Content-Type").getValue();
+		if(StringUtils.isNotBlank(headContent)){
+			tags.add(headContent);
+		}
+		Iterator<String> iterator = tags.iterator();
+		while(iterator.hasNext()){
+			String regex = ".*charset=([^;]*).*";
+			Pattern pattern = Pattern.compile(regex);
+			Matcher matcher = pattern.matcher(iterator.next());
+			if(matcher.find()){
+				String content = matcher.group(1);
+				if(!"text/html".equals(content)){
+					return matcher.group(1);
+				}
+			}
+		}
+		return "UTF-8";
+	}
+
+	public String getContent(String url) throws Exception {
+		String filePath = null;
+		// 1.生成 HttpClinet对象并设置参数
+		HttpClient httpClient = new HttpClient();
+		// 设置 HTTP连接超时 5s
+		httpClient.getHttpConnectionManager().getParams()
+				.setConnectionTimeout(5000);
+		// 2.生成 GetMethod对象并设置参数
+		GetMethod getMethod = new GetMethod(url);
+		// 设置 get请求超时 5s
+		getMethod.getParams().setParameter(HttpMethodParams.SO_TIMEOUT, 5000);
+		// 设置请求重试处理
+		getMethod.getParams().setParameter(HttpMethodParams.RETRY_HANDLER,
+				new DefaultHttpMethodRetryHandler());
+		// 3.执行GET请求
+		try {
+			int statusCode = httpClient.executeMethod(getMethod);
+			// 判断访问的状态码
+			if (statusCode != HttpStatus.SC_OK) {
+				System.err.println("Method failed: "
+						+ getMethod.getStatusLine());
+				filePath = null;
+			}
+			// 4.处理 HTTP 响应内容
+			byte[] responseBody = getMethod.getResponseBody();// 读取为字节数组
+			String contentType = getContentType(getMethod,url);
+			String content = new String(responseBody,getCharSet(contentType));
+			return content;
+		} catch (HttpException e) {
+			// 发生致命的异常，可能是协议不对或者返回的内容有问题
+			System.out.println("请检查你的http地址是否正确");
+			e.printStackTrace();
+		} catch (IOException e) {
+			// 发生网络异常
+			e.printStackTrace();
+		} finally {
+			// 释放连接
+			getMethod.releaseConnection();
+		}
+		return "";
 	}
 
 }

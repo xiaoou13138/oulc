@@ -45,15 +45,15 @@ public class DealData {
 		webInfoBean.setDelFlag(1L);
 		webInfoBean.setOperId(1L);
 		webInfoBean.setUrl(url);
+		webInfoBean.setTitle(title);
 		webInfosv.save(webInfoBean);
 		long webInfoId =webInfoBean.getId();
 		while(iterator.hasNext()){
 			String str = iterator.next();
 			str.replaceAll("[\\pP\\pS\\pZ]", "");
 			Date date = TimeUtil.getCurrentTimeyyyyMMddhhmmss();
-			long wordId = cache.queryWordIdByWrod(str);
+			long wordId = cache.queryWordIdByWord(str);
 			if(wordId ==0 ){
-
 				long id = 0;
 				WordBean wordBean = new WordBean();
 				wordBean.setCreateDate(date);
@@ -68,22 +68,46 @@ public class DealData {
 				wordLinkBean.setWordId((int)id);
 				wordLinkBean.setWebInfoId((int)webInfoId);
 				wordLinkSV.save(wordLinkBean);
-				
 			}
 		}
 		
 		//存取到数据库当中 如果词条已经存在就不存word表 如果不存在就存 WebInfo是存网站的Url信息  word_link表是关联表
 		
 	}
+
+	/**
+	 * 判断是否是汉字
+	 * @param str
+	 * @return
+	 */
+	public static boolean isChinese(String str) {
+		String regEx = "[\u4e00-\u9fa5]";
+		Pattern pat = Pattern.compile(regEx);
+		Matcher matcher = pat.matcher(str);
+		boolean flg = false;
+		if (matcher.find())
+			flg = true;
+
+		return flg;
+	}
+
 	public Set<String> devideWebInfo(String content){
 		Set<String> set = new HashSet<String>();
 		JcsegUtil util = new JcsegUtil();
 		String result = util.segText(regexHtml(content), JcsegTaskConfig.COMPLEX_MODE);
 		String resultS[] = result.split(",");
 		for(String str:resultS){
+			if(StringUtils.isNotBlank(str) && DealData.isChinese(str))
 			set.add(str);
 		}
 		return set;
+	}
+
+	public String[] devideWord(String content){
+		JcsegUtil util = new JcsegUtil();
+		String result = util.segText(regexHtml(content), JcsegTaskConfig.COMPLEX_MODE);
+		String resultS[] = result.split(",");
+		return resultS;
 	}
 	/**
 	 * 过滤掉所有的<>内容

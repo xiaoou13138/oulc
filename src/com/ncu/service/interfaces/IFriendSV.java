@@ -17,6 +17,6 @@ public interface IFriendSV {
      * @return
      * @throws Exception
      */
-    public List getFrienInfoReturn(String userId)throws Exception;
+    public List getFrienInfoReturn(long userId)throws Exception;
 
 }

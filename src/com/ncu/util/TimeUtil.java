@@ -15,7 +15,7 @@ public class TimeUtil {
 	 * @return
 	 */
 	public static Date getCurrentTimeyyyyMMddhhmmss(){
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date date = null;
 		try{
 			date = sdf.parse(sdf.format(new Date()));
@@ -26,16 +26,26 @@ public class TimeUtil {
 	}
 
 	public static String formatTimeyyyyMMddhhmmss(Date date){
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		try{
-			return sdf.format(new Date());
+			return sdf.format(date);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return "";
+	}
+
+	public static String formatTimeWithChinese(Date date){
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss");
+		try{
+			return sdf.format(date);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		return "";
 	}
 	public static String getCurrentTimeyyyyMMddhhmmssStr(){
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddhhmmss");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 		try{
 			return sdf.format(new Date());
 		}catch(Exception e){

@@ -16,25 +16,17 @@ public class APPUtil {
 		if(data.containKey("callback")){
 			String callback = data.getString("callback");
 			return new JSONPObject(callback,map);
-			}else{
-				return map;
+		}else{
+			return map;
 		}
 	}
 
 	/**
-	 * 安全获得session里面的参数
-	 * @param session
-	 * @param paramName
+	 * 从json串里面安全获取值 如果没有key就返回一个空字符串
+	 * @param object
+	 * @param key
 	 * @return
 	 */
-	public static String getSafeParamsFromSession(HttpSession session,String paramName){
-		Object paramsVal = session.getAttribute(paramName);
-		if(paramsVal != null){
-			return paramsVal.toString();
-		}
-		return "";
-	}
-
 	public static String getSafeStringFromJSONObject(JSONObject object,String key){
 		String rtnValue = "";
 		if(object != null && StringUtils.isNotBlank(key)){
@@ -44,4 +36,18 @@ public class APPUtil {
 		}
 		return rtnValue;
 	}
+
+	/**
+	 *  从json串中安全过去long类型的值
+	 * @param object
+	 * @param key
+	 * @return
+	 */
+	public static long getSafeLongParamFromJSONObject(JSONObject object,String key){
+		if(object.containsKey(key)){
+			return object.getLong(key);
+		}
+		return 0L;
+	}
+
 }

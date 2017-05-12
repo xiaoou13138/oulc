@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.HashMap;
 
@@ -25,6 +26,22 @@ public class EditUserInfoController extends BaseController {
     @Qualifier("UserSVImpl")
     private IUserSV userSV;
 
+    /**
+     * 用户请求网页
+     * @return
+     */
+    @RequestMapping(value="/editUserInfo")
+    public ModelAndView getView()throws Exception{
+        ModelAndView mv = this.getModelAndView();
+        ViewData data = this.getReturnViewData();
+        mv.setViewName("editUserInfo");
+        mv.addObject("data",data);
+        return mv;
+    }
+    /**
+     * 修改用户信息页面初始化时获得数据
+     * @return
+     */
     @RequestMapping(value="/editUserInfo_getEditUserInfo" ,produces="application/json;charset=UTF-8")
     @ResponseBody
     public Object viewInitData(){
@@ -43,11 +60,9 @@ public class EditUserInfoController extends BaseController {
     public Object editUserInfo(){
         JSONObject rtnObject = this.getObject();
         try {
-            ViewData viewData = this.getViewData();
-            String realName = (String) viewData.get("realName");
-            int a= 0;
-            realName = this.getRequest().getParameter("realName");
-            int b =2;
+            JSONObject viewData = this.getViewJSON();
+            long userId = getLongParamFromSession("userId");
+            userSV.updateUserInfo(viewData,userId);
             rtnObject.put("result","Y");
         }catch (Exception e){
             e.printStackTrace();

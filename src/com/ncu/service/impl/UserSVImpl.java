@@ -5,8 +5,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import com.ncu.cache.StaticDataCache;
 import com.ncu.dao.interfaces.ICommonDAO;
+import com.ncu.service.interfaces.IAuditSV;
+import com.ncu.service.interfaces.IReportSV;
 import com.ncu.table.bean.ParamsDefine;
+import com.ncu.util.TimeUtil;
 import net.sf.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.infinispan.commons.hash.Hash;
@@ -21,6 +25,7 @@ import com.ncu.service.interfaces.IUserSV;
 import com.ncu.table.ivalue.IUserValue;
 import com.ncu.util.SQLCon;
 
+import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 
 @Service("UserSVImpl")
@@ -30,6 +35,15 @@ public class UserSVImpl implements IUserSV {
 	@Autowired
 	@Qualifier("CommonDAOImpl")
 	private ICommonDAO commonDAO;
+
+	@Autowired
+	private StaticDataCache staticDataCache;
+
+	@Resource(name="AuditSVImpl")
+	private IAuditSV auditSV;
+
+	@Resource(name="ReportSVImpl")
+	private IReportSV reportSV;
 	
     /**
      * 保存用户的信息
@@ -57,6 +71,7 @@ public class UserSVImpl implements IUserSV {
 				rtnMap.put("result",true);
 				rtnMap.put("userId",value.getUserId());
 				rtnMap.put("userName",value.getName());
+				rtnMap.put("userType",value.getUserType());
 			}
 		}
 		return rtnMap;
@@ -169,10 +184,11 @@ public class UserSVImpl implements IUserSV {
 	 */
 	public HashMap checkUserInfoByCookie(Cookie[] cookies) throws Exception {
 		HashMap map = new HashMap();
-		String rtnUserId = "";
+		long rtnUserId = 0;
 		String rtnName = "";
 		String cookieUserId = "";
 		String cookiePassword = "";
+		String userType = "";
 		if(cookies != null && cookies.length>0){
 			for(int i = 0;i<cookies.length;i++){
 				String key = URLDecoder.decode(cookies[i].getName(), "UTF-8");
@@ -186,12 +202,14 @@ public class UserSVImpl implements IUserSV {
 			}
 			HashMap checkMap = checkUserInfo(cookieUserId,cookiePassword);
 			if((boolean)checkMap.get("result")){
-				rtnUserId = String.valueOf(checkMap.get("userId"));
+				rtnUserId = (long)checkMap.get("userId");
 				rtnName = String.valueOf(checkMap.get("userName"));
+				userType = String.valueOf(checkMap.get("userType"));
 			}
 		}
 		map.put("userId",rtnUserId);
 		map.put("userName",rtnName);
+		map.put("userType",userType);
 		return map;
 	}
 
@@ -203,19 +221,189 @@ public class UserSVImpl implements IUserSV {
 	 */
 	public HashMap getEditViewInitData(long userId) throws Exception{
 		HashMap rtnMap = new HashMap();
-		if(userId !=0){
-			IUserValue value = queryUserInfoByUserId(userId);
-			if(value != null){
-				//需要用户的手机号码   真实名称  性别
-				rtnMap.put("phoneNum",value.getPhone());
-				rtnMap.put("realName",value.getRealName());
-				rtnMap.put("sex",value.getSex());
-			}else{
-				rtnMap.put("phoneNum","");
-				rtnMap.put("realName","");
-				rtnMap.put("sex","");
-			}
+		IUserValue value = queryUserInfoByUserId(userId);
+		if(value == null){
+			throw new Exception("用户不存在");
+		}
+		if(value.getRealName() != null){
+			rtnMap.put("realName",value.getRealName());
+		}
+		if(value.getPhone() != null){
+			rtnMap.put("phoneNum",value.getPhone());
+		}
+		if(value.getSex() != null){
+			rtnMap.put("sex",value.getSex());
+		}
+		if(value.getRealName() != null){
+			rtnMap.put("description",value.getDescription());
+		}
+		if(value.getCreateDate() != null){
+			rtnMap.put("createDate", TimeUtil.formatTimeWithChinese(value.getCreateDate()));
 		}
 		return rtnMap;
+	}
+
+	/**
+	 * 模糊查询用户信息
+	 * @param name 用户名称
+	 * @return
+	 * @throws Exception
+	 */
+	public List<IUserValue> queryUserInfo(String name)throws Exception{
+		StringBuilder condition = new StringBuilder();
+		HashMap params = new HashMap();
+		SQLCon.connectSQL(IUserValue.S_Name,name,condition,params,true);
+		return dao.queryUserInfoByCondition(condition.toString(),params,-1,-1);
+	}
+	/**
+	 * 查询用户名称
+	 * @param userId
+	 * @return
+	 * @throws Exception
+	 */
+	public String queryUserNameByUserId(long userId)throws Exception{
+		IUserValue userValue = queryUserInfoByUserId(userId);
+		if(userValue != null){
+			return userValue.getName();
+		}
+		return "";
+	}
+
+	/**
+	 * 修改用户的类型
+	 * @param userId
+	 * @param userType
+	 * @throws Exception
+	 */
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void changeUserType(long userId,String userType) throws Exception{
+		IUserValue userValue = queryUserInfoByUserId(userId);
+		if(userValue == null){
+			throw new Exception("用户不存在");
+		}
+		userValue.setUserType(userType);
+		dao.save(userValue);
+	}
+
+	/**
+	 * 修改用户的信息
+	 * @param viewData
+	 * @throws Exception
+	 */
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void updateUserInfo(JSONObject viewData,long userId)throws Exception{
+		IUserValue userValue = queryUserInfoByUserId(userId);
+		if(userValue == null){
+			throw new Exception("用户不存在");
+		}
+		//手机号码 真实名称 性别
+		if(viewData.containsKey("phoneNum")){
+			userValue.setPhone(viewData.getString("phoneNum"));
+		}
+		if(viewData.containsKey("sex")){
+			userValue.setSex(viewData.getString("sex"));
+		}
+		if(viewData.containsKey("realName")){
+			userValue.setRealName(viewData.getString("realName"));
+		}
+		if(viewData.containsKey("description")){
+			userValue.setDescription(viewData.getString("description"));
+		}
+		dao.save(userValue);
+	}
+	/**
+	 * 查询公共账号
+	 * @param searchContent
+	 * @param begin
+	 * @param end
+	 * @return
+	 * @throws Exception
+	 */
+	public HashMap queryUserInfoByConditionForController(String searchContent,int begin,int end)throws Exception{
+		HashMap rtnMap = new HashMap();
+		List<IUserValue> userValueList = queryUserInfoByCondition(searchContent,begin,end);
+		rtnMap.put("count",queryUserInfoCountByCondition(searchContent));
+		if(userValueList != null &&  userValueList.size()>0){
+			ArrayList rtnList = new ArrayList();
+			int length = userValueList.size();
+			for(int i =0;i<length;i++){
+				IUserValue userValue = userValueList.get(i);
+				HashMap map = new HashMap();
+				map.put("userName",userValue.getName());
+				map.put("userCode",userValue.getCode());
+				map.put("userId",userValue.getUserId());
+				if(userValue.getDescription() != null){
+					map.put("userDsc",userValue.getDescription());
+				}
+				map.put("accountType",staticDataCache.getCodeValueByCode(userValue.getUserType()));
+
+				//查询账号被举报过多少次  审核通过的有多少次
+				HashMap reportMap = reportSV.queryReportInfoByUserId(userValue.getUserId());
+				map.put("report",reportMap.get("reportCount")+"/"+reportMap.get("passReportCount"));
+
+				rtnList.add(map);
+			}
+			rtnMap.put("userList",rtnList);
+		}
+		return rtnMap;
+	}
+
+	/**
+	 * 查询公共账号
+	 * @param searchContent
+	 * @param begin
+	 * @param end
+	 * @return
+	 * @throws Exception
+	 */
+	public List<IUserValue> queryUserInfoByCondition(String searchContent,int begin,int end)throws Exception{
+		if(StringUtils.isNotBlank(searchContent)){
+			String sql = " from UserBean a where a.name like :searchContent or a.code like :searchContent or a.description like:searchContent";
+			ParamsDefine paramsDefine = new ParamsDefine();
+			paramsDefine.setIsList(false);
+			paramsDefine.setColName("searchContent");
+			paramsDefine.setParamVal('%'+searchContent+'%');
+			ParamsDefine[] paramsDefines = {paramsDefine};
+			return commonDAO.commonQuery(sql,paramsDefines,begin,end);
+		}else{
+			String sql = " from UserBean ";
+			return commonDAO.commonQuery(sql,null,begin,end);
+		}
+
+
+	}
+	public long queryUserInfoCountByCondition(String searchContent)throws Exception{
+		if(StringUtils.isNotBlank(searchContent)){
+			String sql = " from UserBean a where a.name like :searchContent or a.code like :searchContent or a.description like:searchContent";
+			ParamsDefine paramsDefine = new ParamsDefine();
+			paramsDefine.setIsList(false);
+			paramsDefine.setColName("searchContent");
+			paramsDefine.setParamVal('%'+searchContent+'%');
+			ParamsDefine[] paramsDefines = {paramsDefine};
+			return commonDAO.getCount(sql,paramsDefines);
+		}else{
+			String sql = " from UserBean ";
+			return commonDAO.getCount(sql,null);
+		}
+	}
+
+	/**
+	 * 修改密码
+	 * @param oldPassword
+	 * @param newPassword
+	 * @param userId
+	 * @throws Exception
+	 */
+	@Transactional(propagation = Propagation.REQUIRED)
+	public void updatePasswordByOldAndNewPassword(String oldPassword,String newPassword,long userId)throws Exception{
+		IUserValue userValue = queryUserInfoByUserId(userId);
+		if(userValue ==  null){
+			throw new Exception("用户不存在");
+		}
+		String password = userValue.getPassword();
+		if(password.equals(oldPassword)){
+			userValue.setPassword(newPassword);
+		}
+		dao.save(userValue);
 	}
 }

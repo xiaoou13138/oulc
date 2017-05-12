@@ -37,6 +37,7 @@ public class BaseController {
 	private ViewData returnViewData = new ViewData();
 	private HttpSession session = null;
 	private HttpServletRequest request = null;
+	private long userId = 0;
 	/**
 	 * 初始化函数
 	 */
@@ -45,20 +46,30 @@ public class BaseController {
 		try{
 			this.request = ((ServletRequestAttributes)RequestContextHolder.getRequestAttributes()).getRequest();
 			this.session = this.request.getSession();
+
 			String userName = getStringParamFromSession("userName");
-			long userId =getLongParamFromSession("userId");
-			returnViewData.put("userName",userName);//把名字塞到页面的对象
-			baseJsonObject.put("userName",userName);//吧名字塞到返回的Json串中去
+			String userType = getStringParamFromSession("userType");
+			userId =getLongParamFromSession("userId");
 
 			int num = messageSV.queryMessageNoticeQueueNum(userId);
 			baseJsonObject.put("messageNum",num);//提示您有N条私信
 			returnViewData.put("messageNum",num);
-			if(userId !=0 || StringUtils.isBlank(userName)){
-				Cookie[] cookies  = this.getRequest().getCookies();
-				HashMap map = userSV.checkUserInfoByCookie(cookies);
-				this.getRequest().getSession().setAttribute("userId",map.get("userId"));
-				this.getRequest().getSession().setAttribute("userName",map.get("userName"));
+			if(userId ==0 || StringUtils.isBlank(userName) || StringUtils.isBlank(userType)){
+				Cookie[] cookies  = request.getCookies();
+				HashMap map =userSV.checkUserInfoByCookie(cookies);
+				userId = (long)map.get("userId");
+				userName = (String)map.get("userName");
+				userType = (String)map.get("userType");
+				session.setAttribute("userId",userId);
+				session.setAttribute("userName",userName);
+				session.setAttribute("userType",userType);
 			}
+			returnViewData.put("userId",userId);
+			returnViewData.put("userName",userName);
+			returnViewData.put("userType",userType);
+			baseJsonObject.put("userId",userId);
+			baseJsonObject.put("userName",userName);
+			baseJsonObject.put("userType",userType);
 
 		}catch (Exception e){
 			e.printStackTrace();
@@ -101,7 +112,7 @@ public class BaseController {
 	 * 从session里面获取long类型的数据  如果没有就返回0
 	 * @param code
 	 * @return
-	 * @throws Exception
+	 * @throws
 	 */
 	public long getLongParamFromSession(String code) throws Exception{
 		Object value = session.getAttribute(code);
@@ -125,4 +136,11 @@ public class BaseController {
 		return null;
 	}
 
+	public JSONObject getViewJSON() throws Exception{
+		ViewData viewData = this.getViewData();
+		return viewData.getJSONObject("VIEWDATA");
+	}
+	public long getUserId(){
+		return this.userId;
+	}
 }

@@ -21,7 +21,7 @@ import com.ncu.util.StringUtil;
  */
 public class CreateBean {
 	String path = "D:/studyWorkSpace/oulc/src/com/ncu/table";
-	String tableName = "web_info";
+	String tableName = "user";
 	String driver = "com.mysql.jdbc.Driver";
 	String url = "jdbc:mysql://localhost:3306/search_engine";
 	String user = "root";
@@ -248,7 +248,14 @@ public class CreateBean {
 				.append(beanName)
 				.append(".beanClass.getSimpleName());\r\n")
 				.append("  }\r\n")
-				.append("  public void save(Object value) throws Exception{\r\n    beanUtil.save(value);\r\n  }\r\n}");
+				.append("  public void save(Object value) throws Exception{\r\n    beanUtil.save(value);\r\n  }\r\n")
+				.append("  public long queryCountByCondition(String condition , HashMap<String,String> params)throws Exception{\r\n  ")
+				.append("  return beanUtil.getCount(condition,params,")
+				.append(beanName)
+				.append(".beanClass.getSimpleName());\r\n  }\r\n")
+				.append("  public void delete (Object value)throws Exception{")
+				.append("  \r\n    beanUtil.delete(value);\r\n  }")
+				.append("\r\n}\r\n");
 		return content.toString();
 	}
 	public String createIvalueContent(){

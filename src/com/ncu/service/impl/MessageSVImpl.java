@@ -111,45 +111,52 @@ public class MessageSVImpl implements IMessageSV {
      * @throws Exception
      */
 
-    public  List getMessageByUserId(String userId,String friendId,int begin,int end) throws Exception{
+    public  List getMessageByUserId(long userId,long friendId,int begin,int end) throws Exception{
         List rtnList = new ArrayList();
-        if(StringUtils.isNotBlank(userId) && StringUtils.isNotBlank(friendId)){
+        boolean convert = false;//标识用户的id是否是反过来的
+        if(userId !=0 && friendId !=0){
             //查询两个人的名称
-            long smallUserId = Long.parseLong(userId);
-            long bigUserId = Long.parseLong(friendId);
-            String smallUserIdName = "";
-            String bigUserIdName = "";
-            if(smallUserId>bigUserId) {
-                long t = smallUserId;
-                smallUserId = bigUserId;
-                bigUserId = t;
-            }
+            String userName = "";
+            String friendName = "";
+
             ArrayList userIdList = new ArrayList();
-            userIdList.add(smallUserId);
-            userIdList.add(bigUserId);
-            List<IUserValue> userList = userSV.queryUserInfoByUserIds(userIdList);
+            userIdList.add(userId);
+            userIdList.add(friendId);
+            List<IUserValue> userList = userSV.queryUserInfoByUserIds(userIdList);//查询两个用户的信息
             if(userList.size()!=2){
                 throw new Exception("根据两个userId查不到两个用户的信息");
             }else{
-                if(userList.get(0).getUserId() == smallUserId){
-                    smallUserIdName = userList.get(0).getName();
-                    bigUserIdName = userList.get(1).getName();
+                if(userList.get(0).getUserId() == userId){
+                    userName = userList.get(0).getName();
+                    friendName = userList.get(1).getName();
                 }else{
-                    bigUserIdName = userList.get(0).getName();
-                    smallUserIdName = userList.get(1).getName();
+                    friendName = userList.get(0).getName();
+                    userName = userList.get(1).getName();
                 }
             }
-            List<MessageBean> list = queryMessageByAcceptUserId(smallUserId,bigUserId,-1,-1);
-            if(list != null){
+            List<MessageBean> list = null;
+            if(userId<friendId){
+                list = queryMessageByAcceptUserId(userId,friendId,-1,-1);
+            }else{
+                list = queryMessageByAcceptUserId(friendId,userId,-1,-1);
+            }
+            if(list != null){//如果查到的消息不是空的
                 int length = list.size();
                 for(int i =0 ;i<length;i++){
                     HashMap map = new HashMap();
-                    map.put("userIdSmall",list.get(i).getUserIdSmall());
-                    map.put("smallUserIdName",smallUserIdName);
-                    map.put("userIdBig",list.get(i).getUserIdBig());
-                    map.put("bigUserIdName",bigUserIdName);
+                    map.put("userId",userId);
+                    map.put("userName",userName);
+                    map.put("friendId",friendId);
+                    map.put("friendName",friendName);
                     map.put("content",list.get(i).getContent());
-                    map.put("sendPeople",list.get(i).getSendPeople());
+                    String messageType = "send";
+                    if(userId < friendId && list.get(i).getSendPeople() == 1 ) {
+                        messageType = "accept";
+                    }
+                    if(userId > friendId && list.get(i).getSendPeople() == 0){
+                        messageType = "accept";
+                    }
+                    map.put("messageType",messageType);
                     map.put("time",TimeUtil.formatTimeyyyyMMddhhmmss(list.get(i).getCreateDate()));
                     rtnList.add(map);
                 }

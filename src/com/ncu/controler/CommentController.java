@@ -39,15 +39,19 @@ public class CommentController extends BaseController {
     @ResponseBody
     public Object getComment(){
         JSONObject rtnObject = this.getObject();
+        String rtn = "Y";
         try{
             ViewData viewData = this.getViewData();
             JSONObject viewObject = viewData.getJSONObject("VIEWDATA");
-            String webId = APPUtil.getSafeStringFromJSONObject(viewObject,"webId");
+            long webId = APPUtil.getSafeLongParamFromJSONObject(viewObject,"webId");
             List commentList =commentSV.getCommentByWebId(webId,-1,-1);
             rtnObject.put("commentList",commentList);
         }catch (Exception e){
+            rtn= "N";
+            rtnObject.put("errMessage",e.getMessage());
             e.printStackTrace();
         }
+        rtnObject.put("result",rtn);
         return rtnObject;
     }
 
@@ -56,16 +60,17 @@ public class CommentController extends BaseController {
     @ResponseBody
     public Object sendComment(){
         JSONObject rtnObject= this.getObject();
-        String rtn = "N";
+        String rtn = "Y";
         try{
             ViewData viewData = this.getViewData();
             JSONObject viewObject= viewData.getJSONObject("VIEWDATA");
             String content = APPUtil.getSafeStringFromJSONObject(viewObject,"content");
             String webId = APPUtil.getSafeStringFromJSONObject(viewObject,"webId");
-            String userId = APPUtil.getSafeParamsFromSession(this.getRequest().getSession(),"userId");
+            long userId = getLongParamFromSession("userId");
             commentSV.saveContentByViewData(userId,content,webId);
-            rtn= "Y";
         }catch (Exception e){
+            rtn= "N";
+            rtnObject.put("errMessage",e.getMessage());
             e.printStackTrace();
         }
         rtnObject.put("result",rtn);

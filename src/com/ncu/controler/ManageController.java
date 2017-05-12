@@ -11,16 +11,16 @@ import org.springframework.web.servlet.ModelAndView;
  */
 @Controller
 @Scope("prototype")
-public class UserInfoController extends  BaseController {
+public class ManageController extends  BaseController {
     /**
      * 用户请求网页
      * @return
      */
-    @RequestMapping(value="/userInfo")
+    @RequestMapping(value="/manage")
     public ModelAndView toLogin()throws Exception{
         ModelAndView mv = this.getModelAndView();
         ViewData data = getReturnViewData();
-        mv.setViewName("userInfo");
+        mv.setViewName("manage");
         mv.addObject("data",data);
         return mv;
     }

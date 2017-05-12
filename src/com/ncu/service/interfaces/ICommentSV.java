@@ -21,7 +21,7 @@ public interface ICommentSV {
      * @return
      * @throws Exception
      */
-    public List<ICommentValue> queryWebCommentById(String webId,int begin,int end) throws Exception;
+    public List<ICommentValue> queryWebCommentById(long webId,int begin,int end) throws Exception;
 
 
     /**
@@ -32,7 +32,7 @@ public interface ICommentSV {
      * @return
      * @throws Exception
      */
-    public List<Map> getCommentByWebId(String webId, int begin, int end) throws Exception;
+    public List<Map> getCommentByWebId(long webId, int begin, int end) throws Exception;
 
     /**
      * 根据页面传进来的信息保存评论的信息
@@ -41,6 +41,6 @@ public interface ICommentSV {
      * @param webId
      * @throws Exception
      */
-    public void saveContentByViewData(String userId,String content,String webId) throws Exception;
+    public void saveContentByViewData(long userId,String content,String webId) throws Exception;
 
 }

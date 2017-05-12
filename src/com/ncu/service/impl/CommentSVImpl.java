@@ -41,13 +41,13 @@ public class CommentSVImpl implements ICommentSV {
      * @throws Exception
      */
     @Override
-    public List<ICommentValue> queryWebCommentById(String webId,int begin,int end) throws Exception {
-        if(StringUtils.isNotBlank(webId)){
+    public List<ICommentValue> queryWebCommentById(long webId,int begin,int end) throws Exception {
+        if(webId > 0){
             StringBuilder condition = new StringBuilder();
             HashMap params = new HashMap();
             SQLCon.connectSQL(ICommentValue.S_EntityId,webId,condition,params,false);
             SQLCon.connectSQL(ICommentValue.S_EntityType,"WEB",condition,params,false);
-            SQLCon.connectSQL(ICommentValue.S_DelFlag,"1",condition,params,false);
+            SQLCon.connectSQL(ICommentValue.S_DelFlag,1L,condition,params,false);
             List <ICommentValue> list = commentDAO.queryCommentInfoByCondition(condition.toString(),params, begin, end);
             if(list != null && list.size()>0){
                 return list;
@@ -66,7 +66,7 @@ public class CommentSVImpl implements ICommentSV {
         commentDAO.save(value);
     }
 
-    public List<Map> getCommentByWebId(String webId, int begin, int end) throws Exception {
+    public List<Map> getCommentByWebId(long webId, int begin, int end) throws Exception {
         ArrayList rtnList = new ArrayList();
         List <ICommentValue> list = queryWebCommentById(webId,begin,end);
         StringBuilder html = new StringBuilder();
@@ -85,6 +85,8 @@ public class CommentSVImpl implements ICommentSV {
                 map.put("content",content);
                 map.put("userId",userId);
                 map.put("userName",userName);
+                map.put("createDate",TimeUtil.formatTimeyyyyMMddhhmmss(value.getCreateDate()));
+                map.put("userType",userValue.getUserType());
                 rtnList.add(map);
 
             }
@@ -100,10 +102,10 @@ public class CommentSVImpl implements ICommentSV {
      * @throws Exception
      */
     @Transactional(propagation = Propagation.REQUIRED)
-    public void saveContentByViewData(String userId,String content,String webId) throws Exception{
-        if(StringUtils.isNotBlank(userId)&&StringUtils.isNotBlank(content)&&StringUtils.isNotBlank(webId)){
+    public void saveContentByViewData(long userId,String content,String webId) throws Exception{
+        if(userId>0&&StringUtils.isNotBlank(content)&&StringUtils.isNotBlank(webId)){
             CommentBean bean = new CommentBean();
-            bean.setUserId(Long.parseLong(userId));
+            bean.setUserId(userId);
             bean.setCreateDate(TimeUtil.getCurrentTimeyyyyMMddhhmmss());
             bean.setContent(content);
             bean.setDelFlag(1L);

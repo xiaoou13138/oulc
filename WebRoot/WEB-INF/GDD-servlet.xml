@@ -18,7 +18,7 @@
    http://www.springframework.org/schema/cache/spring-cache-3.2.xsd"
    >
 
-	<context:component-scan base-package="org.springframework.samples.petclinic.web" />
+	<!--<context:component-scan base-package="org.springframework.samples.petclinic.web" />-->
 	<context:component-scan base-package="com.ncu.*" >
 		<!-- <context:include-filter type="regex" expression=".action.*"/>  -->
 	</context:component-scan>
@@ -91,6 +91,14 @@
     
     
     <!-- 静态资源的引入 -->
+    <mvc:resources mapping="/coolfieldset/css/**" location="/plugInUnit/coolfieldset/css/" />
+    <mvc:resources mapping="/coolfieldset/js/**" location="/plugInUnit/coolfieldset/js/" />
+    <mvc:resources mapping="/coolfieldset/images/**" location="/plugInUnit/coolfieldset/images/" />
+
+    <mvc:resources mapping="/bootstrapTree/css/**" location="/plugInUnit/bootstrapTree/css/" />
+    <mvc:resources mapping="/bootstrapTree/js/**" location="/plugInUnit/bootstrapTree/js/" />
+    <mvc:resources mapping="/cityPicker/css/**" location="/plugInUnit/cityPicker/css/" />
+    <mvc:resources mapping="/cityPicker/js/**" location="/plugInUnit/cityPicker/js/" />
     <mvc:resources mapping="/layer/css/**" location="/plugInUnit/layer/skin/" />
     <mvc:resources mapping="/layer/js/**" location="/plugInUnit/layer/js/" />
     <mvc:resources mapping="/js/**" location="/js/"/>

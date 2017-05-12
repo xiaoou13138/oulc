@@ -1,6 +1,8 @@
 package com.ncu.service.interfaces;
 
 import com.ncu.table.ivalue.IUserValue;
+import net.sf.json.JSONObject;
+import org.infinispan.commons.hash.Hash;
 
 import javax.servlet.http.Cookie;
 import java.util.ArrayList;
@@ -76,5 +78,66 @@ public interface IUserSV {
 	 * @throws Exception
 	 */
 	public HashMap getEditViewInitData(long userId) throws Exception;
+
+	/**
+	 * 模糊查询用户信息
+	 * @param name 用户名称
+	 * @return
+	 * @throws Exception
+	 */
+	public List<IUserValue> queryUserInfo(String name)throws Exception;
+
+	/**
+	 * 查询用户名称
+	 * @param userId
+	 * @return
+	 * @throws Exception
+	 */
+	public String queryUserNameByUserId(long userId)throws Exception;
+
+	/**
+	 * 修改用户的类型
+	 * @param userId
+	 * @param userType
+	 * @throws Exception
+	 */
+	public void changeUserType(long userId,String userType) throws Exception;
+
+	/**
+	 * 修改用户的信息
+	 * @param viewData
+	 * @throws Exception
+	 */
+	public void updateUserInfo(JSONObject viewData,long userId)throws Exception;
+
+	/**
+	 * 查询公共账号
+	 * @param searchContent
+	 * @param begin
+	 * @param end
+	 * @return
+	 * @throws Exception
+	 */
+	public HashMap queryUserInfoByConditionForController(String searchContent,int begin,int end)throws Exception;
+
+	/**
+	 * 查询公共账号
+	 * @param searchContent
+	 * @param begin
+	 * @param end
+	 * @return
+	 * @throws Exception
+	 */
+	public List<IUserValue> queryUserInfoByCondition(String searchContent,int begin,int end)throws Exception;
+	public long queryUserInfoCountByCondition(String searchContent)throws Exception;
+
+	/**
+	 * 修改密码
+	 * @param oldPassword
+	 * @param newPassword
+	 * @param userId
+	 * @throws Exception
+	 */
+	public void updatePasswordByOldAndNewPassword(String oldPassword,String newPassword,long userId)throws Exception;
 
 }

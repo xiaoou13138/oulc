@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +41,23 @@ public class MessageController extends BaseController{
     private IMessageSV messageSV;
 
 
+    /**
+     * 用户请求网页
+     * @return
+     */
+    @RequestMapping(value="/message")
+    public ModelAndView getView()throws Exception{
+        ModelAndView mv = this.getModelAndView();
+        ViewData data = this.getReturnViewData();
+        mv.setViewName("message");
+        mv.addObject("data",data);
+        return mv;
+    }
 
+    /**
+     * 页面初始化调用的方法
+     * @return
+     */
     @RequestMapping(value="/message_getBaseInfo" ,produces="application/json;charset=UTF-8")
     @ResponseBody
     public Object getBaseInfo(){
@@ -54,7 +71,7 @@ public class MessageController extends BaseController{
         try{
             ViewData viewData = this.getViewData();
             //获取右边的好友的信息 begin
-            String userId  = APPUtil.getSafeParamsFromSession(this.getRequest().getSession(),"userId");
+            long userId = getLongParamFromSession("userId");
             List friendInfo  = friendSV.getFrienInfoReturn(userId);//查询到用户的朋友的信息
             rtnObject.put("friendsName",friendInfo);
 
@@ -62,7 +79,7 @@ public class MessageController extends BaseController{
             if(friendInfo.size()>0){
                 HashMap map = (HashMap)friendInfo.get(0);
                 long friendId = (long)map.get("userId");
-                List messageList = messageSV.getMessageByUserId(userId,String.valueOf(friendId),-1,-1);
+                List messageList = messageSV.getMessageByUserId(userId,friendId,-1,-1);
                 rtnObject.put("messageList",messageList);
             }
         }catch (Exception e){
@@ -87,9 +104,12 @@ public class MessageController extends BaseController{
     public Object getMessage(){
         JSONObject rtnObject = this.getObject();
         try{
-            String userId = APPUtil.getSafeParamsFromSession(this.getRequest().getSession(),"userId");
-            if(StringUtils.isNotBlank(userId)){
-                List<MessageBean> messageList = messageSV.queryMessageByAcceptUserId(Long.parseLong(userId),Long.parseLong(userId),-1,-1);
+            ViewData viewData = this.getViewData();
+            JSONObject viewObject= viewData.getJSONObject("DATA");
+            long userId = getLongParamFromSession("userId");
+            long  friendId = APPUtil.getSafeLongParamFromJSONObject(viewObject,"friendId");
+            if(userId >0){
+                List<MessageBean> messageList = messageSV.queryMessageByAcceptUserId(userId,friendId,-1,-1);
                 rtnObject.put("messageList",messageList);
                 return rtnObject;
             }
@@ -108,11 +128,11 @@ public class MessageController extends BaseController{
             ViewData viewData =this.getViewData();
             JSONObject object = viewData.getJSONObject("VIEWDATA");
             String content = APPUtil.getSafeStringFromJSONObject(object,"content");
-            String sendUserId = APPUtil.getSafeParamsFromSession(this.getRequest().getSession(),"userId");
-            String acceptUserId = APPUtil.getSafeStringFromJSONObject(object,"acceptUserId");
-            if(StringUtils.isNotBlank(content) &&StringUtils.isNotBlank(sendUserId) &&StringUtils.isNotBlank(acceptUserId)){
-                messageSV.save(content,Long.parseLong(sendUserId),Long.parseLong(acceptUserId));
-                messageSV.saveChangeMessageNoticeQueue(Long.parseLong(acceptUserId),true);
+            long userId = getLongParamFromSession("userId");
+            long acceptUserId = APPUtil.getSafeLongParamFromJSONObject(object,"acceptUserId");
+            if(StringUtils.isNotBlank(content) &&userId > 0 && acceptUserId > 0){
+                messageSV.save(content,userId,acceptUserId);
+                messageSV.saveChangeMessageNoticeQueue(acceptUserId,true);
                 rtnStr="Y";
             }
         }catch (Exception e){

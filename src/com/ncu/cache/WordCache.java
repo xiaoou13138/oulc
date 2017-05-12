@@ -25,10 +25,10 @@ public class WordCache {
 	@Autowired
 	private WordSVImpl  sv;
 	@Cacheable(value="wordCache", key="#word")
-	public long queryWordIdByWrod(String word) throws  Exception{
+	public long queryWordIdByWord(String word) throws  Exception{
 		return sv.getWordIdByWord(word);
 	}
-	@CacheEvict(value = "cacheTest", allEntries = true)
+	@CacheEvict(value = "wordCache", allEntries = true)
 	public void save(IWordValue bean) throws Exception{
 		sv.save(bean);
 	}

@@ -39,7 +39,7 @@ public interface IMessageSV {
      * @return
      * @throws Exception
      */
-    public  List getMessageByUserId(String userId,String friendId,int begin,int end) throws Exception;
+    public  List getMessageByUserId(long userId,long friendId,int begin,int end) throws Exception;
 
     /**
      * 用户发送消息的时候的流程
